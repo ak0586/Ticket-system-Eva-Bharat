@@ -33,6 +33,7 @@ func main() {
 		tickets.POST("", handlers.CreateTicket)
 		tickets.GET("", handlers.ListTickets)
 		tickets.GET("/:id", handlers.GetTicket)
+		tickets.PATCH("/:id/status", handlers.UpdateStatus)
 	}
 
 	port := os.Getenv("PORT")
