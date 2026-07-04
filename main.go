@@ -6,6 +6,7 @@ import (
 
 	"ticket-system/db"
 	"ticket-system/handlers"
+	"ticket-system/middleware"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -16,14 +17,22 @@ func main() {
 
 	db.Init()
 
-	r := gin.Default()
+	router := gin.Default()
 
-	r.GET("/health", handlers.HealthCheck)
+	router.GET("/health", handlers.HealthCheck)
 
-	auth := r.Group("/auth")
+	auth := router.Group("/auth")
 	{
 		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
+	}
+
+	tickets := router.Group("/tickets")
+	tickets.Use(middleware.Auth())
+	{
+		tickets.POST("", handlers.CreateTicket)
+		tickets.GET("", handlers.ListTickets)
+		tickets.GET("/:id", handlers.GetTicket)
 	}
 
 	port := os.Getenv("PORT")
@@ -32,7 +41,7 @@ func main() {
 	}
 
 	log.Printf("starting on :%s", port)
-	if err := r.Run(":" + port); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
